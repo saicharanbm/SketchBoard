@@ -16,12 +16,14 @@ function TopBar({
   onUndo,
   onRedo,
   setTool,
-  selectedTool, // Pass selectedTool as a prop
+  selectedTool,
+  deleteAll,
 }: {
   onUndo: () => void;
   onRedo: () => void;
   setTool: (tool: Tool) => void;
   selectedTool: Tool; // Selected tool type
+  deleteAll: () => void;
 }) {
   return (
     <div className="topbar">
@@ -73,7 +75,7 @@ function TopBar({
         {""}
         <Redo color="#fff" />
       </button>
-      <button type="button" className="button" onClick={() => setTool("clear")}>
+      <button type="button" className="button" onClick={() => deleteAll()}>
         {""}
         <Trash2 color="#fff" />
       </button>

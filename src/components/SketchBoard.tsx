@@ -104,7 +104,11 @@ function SketchBoard() {
     },
     []
   );
-
+  const deleteCanvas = () => {
+    setElements([]);
+    setHistory([]);
+    setRedoStack([]);
+  };
   const redrawCanvas = useCallback(
     (context: CanvasRenderingContext2D | null, elements: Element[]) => {
       if (!context || !staticCanvasRef.current) return;
@@ -189,6 +193,7 @@ function SketchBoard() {
   }, [drawing, tempElement, dynamicContext]);
 
   const undo = () => {
+    // console.log(history);
     if (history.length === 0) return;
     const lastElement = history[history.length - 1];
     setHistory((prev) => prev.slice(0, -1));
@@ -197,6 +202,7 @@ function SketchBoard() {
   };
 
   const redo = () => {
+    // console.log(redoStack);
     if (redoStack.length === 0) return;
     const redoElement = redoStack[redoStack.length - 1];
     setRedoStack((prev) => prev.slice(0, -1));
@@ -206,10 +212,14 @@ function SketchBoard() {
 
   useEffect(() => {
     const handleMouseDownEvent = (e: MouseEvent) => {
-      handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+      if (e.target instanceof HTMLCanvasElement) {
+        handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+      }
     };
     const handleMouseMoveEvent = (e: MouseEvent) => {
-      handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+      if (e.target instanceof HTMLCanvasElement) {
+        handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+      }
     };
     const handleMouseUpEvent = () => {
       handleMouseUp();
@@ -240,6 +250,7 @@ function SketchBoard() {
         onRedo={redo}
         setTool={setTool}
         selectedTool={tool}
+        deleteAll={deleteCanvas}
       />
       <canvas
         ref={staticCanvasRef}
