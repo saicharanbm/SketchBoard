@@ -3,8 +3,18 @@
   padding: 0;
   box-sizing: border-box;
 }
-body {
+body.light {
   background-color: #f8f9fa;
+}
+body.dark {
+  background-color: #1e1f21;
+}
+body .bg1 {
+  margin: 0;
+  background-color: white; /* Optional */
+  background-image: linear-gradient(0deg, transparent 95%, #ddd 100%),
+    linear-gradient(90deg, transparent 95%, #ddd 100%);
+  background-size: 30px 30px; /* Adjust the grid size here */
 }
 .button {
   cursor: pointer;
@@ -66,4 +76,29 @@ body {
   background-image: linear-gradient(to bottom right, #000 50%, #fff 50%);
   background-size: 25% 25%;
   background-position: 0 0, 25% 25%, 50% 0, 0 25%;
+}
+
+@media screen and (max-width: 580px) {
+  .button {
+    padding-inline: 8px;
+    padding-block: 6px;
+    background-color: #111827;
+    border-radius: 10px;
+    margin: 0 1px;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .topbar {
+    border-radius: 15px;
+    overflow: hidden;
+    padding: 0;
+  }
+  .button {
+    padding-inline: 5px;
+    padding-block: 3px;
+    background-color: #111827;
+    border-radius: 0px;
+    margin: 0;
+  }
 }

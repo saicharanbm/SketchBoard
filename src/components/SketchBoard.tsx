@@ -130,10 +130,18 @@ function SketchBoard() {
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       setDrawing(true);
+      console.log("down");
       const rect = staticCanvasRef.current?.getBoundingClientRect();
+      // console.log(e.changedTouches[0].clientX);
       if (rect) {
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x =
+          e instanceof TouchEvent
+            ? e.changedTouches[0].clientX
+            : e.clientX - rect.left;
+        const y =
+          e instanceof TouchEvent
+            ? e.changedTouches[0].clientY
+            : e.clientY - rect.top;
         const newElement: Element = {
           id: Date.now(),
           type: tool,
@@ -156,8 +164,14 @@ function SketchBoard() {
         return;
       const rect = staticCanvasRef.current?.getBoundingClientRect();
       if (rect) {
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x =
+          e instanceof TouchEvent
+            ? e.changedTouches[0].clientX
+            : e.clientX - rect.left;
+        const y =
+          e instanceof TouchEvent
+            ? e.changedTouches[0].clientY
+            : e.clientY - rect.top;
 
         setTempElement((prev) => ({
           ...prev,
@@ -211,6 +225,24 @@ function SketchBoard() {
   };
 
   useEffect(() => {
+    const handleTouchStartEvent = (e: TouchEvent) => {
+      if (e.target instanceof HTMLCanvasElement) {
+        handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+      }
+    };
+    const handleTouchMoveEvent = (e: TouchEvent) => {
+      if (e.target instanceof HTMLCanvasElement) {
+        console.log("moved");
+        handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+      }
+    };
+
+    const handleTouchEndEvent = () => {
+      handleMouseUp();
+    };
+    window.addEventListener("touchstart", handleTouchStartEvent);
+    window.addEventListener("touchmove", handleTouchMoveEvent);
+    window.addEventListener("touchend", handleTouchEndEvent);
     const handleMouseDownEvent = (e: MouseEvent) => {
       if (e.target instanceof HTMLCanvasElement) {
         handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
@@ -218,6 +250,8 @@ function SketchBoard() {
     };
     const handleMouseMoveEvent = (e: MouseEvent) => {
       if (e.target instanceof HTMLCanvasElement) {
+        console.log("moved");
+
         handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
       }
     };
@@ -230,6 +264,9 @@ function SketchBoard() {
     window.addEventListener("mouseup", handleMouseUpEvent);
 
     return () => {
+      window.removeEventListener("touchstart", handleTouchStartEvent);
+      window.removeEventListener("touchmove", handleTouchMoveEvent);
+      window.removeEventListener("touchend", handleTouchEndEvent);
       window.removeEventListener("mousedown", handleMouseDownEvent);
       window.removeEventListener("mousemove", handleMouseMoveEvent);
       window.removeEventListener("mouseup", handleMouseUpEvent);
@@ -239,7 +276,7 @@ function SketchBoard() {
   return (
     <div
       style={{
-        position: "relative",
+        position: "fixed",
         width: "100vw",
         height: "100vh",
         overflow: "hidden",
