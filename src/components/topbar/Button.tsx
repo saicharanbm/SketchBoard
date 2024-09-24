@@ -1,4 +1,4 @@
-import { Tool } from "../../utils/types";
+import { Tool } from "../../utils/typesAndInterface";
 
 function Button({
   children,

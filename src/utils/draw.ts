@@ -1,12 +1,14 @@
 import { Element, Point } from "./typesAndInterface";
+import { Pattern1, Pattern2 } from "./pattern";
 const drawRectangle = function (
   start: Point,
   end: Point,
   ctx: CanvasRenderingContext2D
 ) {
   ctx.roundRect(start.x, start.y, end.x - start.x, end.y - start.y);
-
-  //   ctx.fill();
+  const pattern = Pattern1(ctx, "red");
+  if (pattern) ctx.fillStyle = pattern;
+  ctx.fill();
 };
 
 const drawFreeStyle = function (
@@ -59,6 +61,9 @@ const drawRhombus = function (
   context.lineTo(midX, rhombusEnd.y);
   context.lineTo(rhombusStart.x, (rhombusStart.y + rhombusEnd.y) / 2);
   context.closePath();
+  const pattern = Pattern2(context, "red");
+  if (pattern) context.fillStyle = pattern;
+  context.fill();
 };
 const drawCircle = function (
   context: CanvasRenderingContext2D,
@@ -83,6 +88,9 @@ const drawCircle = function (
     0, // Start angle
     2 * Math.PI // End angle (full circle)
   );
+  const pattern = Pattern1(context, "red");
+  if (pattern) context.fillStyle = pattern;
+  context.fill();
 };
 
 export {
