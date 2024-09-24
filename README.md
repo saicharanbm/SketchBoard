@@ -32,7 +32,7 @@ To run this project locally:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/sketch-board.git
+   git clone https://github.com/saicharanbm/SketchBoard.git
    ```
 2. Install the dependencies:
 
