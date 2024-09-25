@@ -5,10 +5,28 @@ const drawRectangle = function (
   end: Point,
   ctx: CanvasRenderingContext2D
 ) {
-  ctx.roundRect(start.x, start.y, end.x - start.x, end.y - start.y);
+  // Save the current context state
+  ctx.save();
+
+  // Translate the context to localize the pattern to this rectangle
+  ctx.translate(start.x, start.y);
+
+  // Generate a new pattern for each rectangle
   const pattern = Pattern1(ctx, "red");
   if (pattern) ctx.fillStyle = pattern;
+
+  // Draw the rectangle relative to the translated context
+  ctx.beginPath();
+  ctx.rect(0, 0, end.x - start.x, end.y - start.y);
   ctx.fill();
+
+  // Draw the stroke/outline
+  ctx.strokeStyle = "black"; // Customize stroke color
+  ctx.lineWidth = 2; // Customize stroke thickness
+  ctx.stroke();
+
+  // Restore the context to its original state
+  ctx.restore();
 };
 
 const drawFreeStyle = function (
@@ -55,21 +73,40 @@ const drawRhombus = function (
   rhombusStart: Point,
   rhombusEnd: Point
 ) {
-  const midX = (rhombusStart.x + rhombusEnd.x) / 2;
-  context.moveTo(midX, rhombusStart.y);
-  context.lineTo(rhombusEnd.x, (rhombusStart.y + rhombusEnd.y) / 2);
-  context.lineTo(midX, rhombusEnd.y);
-  context.lineTo(rhombusStart.x, (rhombusStart.y + rhombusEnd.y) / 2);
+  // Calculate the center of the rhombus
+  const centerX = (rhombusStart.x + rhombusEnd.x) / 2;
+  const centerY = (rhombusStart.y + rhombusEnd.y) / 2;
+  context.save();
+  // Translate the context to the center of the rhombus
+  context.translate(centerX, centerY);
+
+  // Calculate relative positions from the center
+  const halfWidth = (rhombusEnd.x - rhombusStart.x) / 2;
+  const halfHeight = (rhombusEnd.y - rhombusStart.y) / 2;
+
+  context.beginPath(); // Make sure to begin a new path
+  context.moveTo(0, -halfHeight); // Top point
+  context.lineTo(halfWidth, 0); // Right point
+  context.lineTo(0, halfHeight); // Bottom point
+  context.lineTo(-halfWidth, 0); // Left point
   context.closePath();
+
   const pattern = Pattern2(context, "red");
   if (pattern) context.fillStyle = pattern;
   context.fill();
+
+  // Reset the translation to avoid affecting other drawings
+  context.restore();
 };
+
 const drawCircle = function (
   context: CanvasRenderingContext2D,
   start: Point,
   end: Point
 ) {
+  // Save the context to restore it later
+  context.save();
+
   // Calculate the center of the ellipse
   const centerX = (start.x + end.x) / 2;
   const centerY = (start.y + end.y) / 2;
@@ -78,19 +115,28 @@ const drawCircle = function (
   const radiusX = Math.abs(end.x - start.x) / 2;
   const radiusY = Math.abs(end.y - start.y) / 2;
 
-  // Draw the ellipse
+  // Translate the context to shift the drawing
+  context.translate(centerX, centerY);
+
+  // Draw the ellipse with the translated coordinate system
+  context.beginPath();
   context.ellipse(
-    centerX,
-    centerY,
+    0, // Use (0, 0) since we already translated to centerX, centerY
+    0,
     radiusX,
     radiusY,
     0, // Rotation
     0, // Start angle
     2 * Math.PI // End angle (full circle)
   );
+
+  // Fill with a pattern if available
   const pattern = Pattern1(context, "red");
   if (pattern) context.fillStyle = pattern;
   context.fill();
+
+  // Restore the context to its original state
+  context.restore();
 };
 
 export {

@@ -1,23 +1,24 @@
 const Pattern1 = (context: CanvasRenderingContext2D, color: string) => {
   const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = 5; // Adjust to control pattern repetition size
-  patternCanvas.height = 5;
+  patternCanvas.width = 15; // Adjust for pattern repetition size
+  patternCanvas.height = 15; // Adjust for pattern repetition size
   const patternContext = patternCanvas.getContext("2d");
 
-  // Draw diagonal stripes on the pattern canvas
   if (patternContext) {
-    patternContext.strokeStyle = color; // Light gray color for stripes
+    patternContext.strokeStyle = color;
     patternContext.lineWidth = 1;
+
     patternContext.beginPath();
-    patternContext.moveTo(0, 5); // Start bottom-left
-    patternContext.lineTo(5, 0); // End top-right
+    patternContext.moveTo(0, 15);
+    patternContext.lineTo(15, 0);
+
     patternContext.stroke();
     patternContext.closePath();
   }
 
-  // Create the pattern
   return context.createPattern(patternCanvas, "repeat");
 };
+
 const Pattern2 = (context: CanvasRenderingContext2D, color: string) => {
   const patternCanvas = document.createElement("canvas");
   patternCanvas.width = 5;
@@ -45,4 +46,27 @@ const Pattern2 = (context: CanvasRenderingContext2D, color: string) => {
   return context.createPattern(patternCanvas, "repeat");
 };
 
-export { Pattern1, Pattern2 };
+const Pattern3 = (context: CanvasRenderingContext2D, color: string) => {
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = 15; // Adjust for pattern repetition size
+  patternCanvas.height = 15; // Adjust for pattern repetition size
+  const patternContext = patternCanvas.getContext("2d");
+
+  if (patternContext) {
+    patternContext.strokeStyle = color;
+    patternContext.lineWidth = 1;
+
+    patternContext.beginPath();
+    patternContext.moveTo(0, 15);
+    patternContext.lineTo(15, 0);
+    patternContext.moveTo(0, 0);
+    patternContext.lineTo(15, 15);
+
+    patternContext.stroke();
+    patternContext.closePath();
+  }
+
+  return context.createPattern(patternCanvas, "repeat");
+};
+
+export { Pattern1, Pattern2, Pattern3 };

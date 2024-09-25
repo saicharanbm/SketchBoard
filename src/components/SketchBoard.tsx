@@ -25,6 +25,8 @@ function SketchBoard() {
   const [history, setHistory] = useState<Element[]>([]);
   const [redoStack, setRedoStack] = useState<Element[]>([]);
 
+  const [snapshot, setSnapshot] = useState<string | null>(null);
+
   useEffect(() => {
     const staticCanvas = staticCanvasRef.current;
     const dynamicCanvas = dynamicCanvasRef.current;
@@ -48,10 +50,38 @@ function SketchBoard() {
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
+  const captureSnapshot = useCallback(() => {
+    if (staticCanvasRef.current) {
+      const dataURL = staticCanvasRef.current.toDataURL();
+
+      setSnapshot(dataURL); // Save snapshot
+    }
+  }, []);
+  useEffect(() => {
+    if (snapshot && staticContext) {
+      const img = new Image();
+      img.src = snapshot;
+      img.onload = () => {
+        if (staticCanvasRef.current) {
+          staticContext.clearRect(
+            0,
+            0,
+            staticCanvasRef.current.width,
+            staticCanvasRef.current.height
+          );
+          staticContext.drawImage(img, 0, 0); // Repaint snapshot
+        }
+      };
+    }
+  }, [snapshot, staticContext]);
+  // const repaintFromSnapshot = useCallback(() => {
+  //   console.log(snapshot);
+  // }, [snapshot, staticContext]);
+
   const drawElement = useCallback(
     (element: Element, context: CanvasRenderingContext2D) => {
       if (!element.points || element.points.length === 0) return;
-      context.save();
+      // context.save();
       context.beginPath();
       context.lineWidth = 2;
       context.strokeStyle = "#000";
@@ -100,7 +130,7 @@ function SketchBoard() {
 
       context.stroke();
       context.closePath();
-      context.restore();
+      // context.restore();
     },
     []
   );
@@ -109,28 +139,30 @@ function SketchBoard() {
     setHistory([]);
     setRedoStack([]);
   };
-  const redrawCanvas = useCallback(
-    (context: CanvasRenderingContext2D | null, elements: Element[]) => {
-      if (!context || !staticCanvasRef.current) return;
-      context.clearRect(
+
+  const redrawStaticCanvas = useCallback(
+    (elements: Element[]) => {
+      console.log("redraw");
+      if (!staticContext || !staticCanvasRef.current) return;
+      staticContext.clearRect(
         0,
         0,
         staticCanvasRef.current.width,
         staticCanvasRef.current.height
       );
-      elements.forEach((element) => drawElement(element, context));
+      elements.forEach((element) => drawElement(element, staticContext));
     },
-    [drawElement]
+    [drawElement, staticContext]
   );
 
-  useEffect(() => {
-    redrawCanvas(staticContext, elements);
-  }, [redrawCanvas, staticContext, elements]);
+  // useEffect(() => {
+  //   redrawCanvas(staticContext, elements);
+  // }, [redrawCanvas, staticContext, elements]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       setDrawing(true);
-      console.log("down");
+
       const rect = staticCanvasRef.current?.getBoundingClientRect();
       // console.log(e.changedTouches[0].clientX);
       if (rect) {
@@ -180,22 +212,35 @@ function SketchBoard() {
               ? [...(prev.points || []), { x, y }]
               : [prev.points![0], { x, y }],
         }));
+        if (dynamicContext && dynamicCanvasRef.current) {
+          dynamicContext.clearRect(
+            0,
+            0,
+            dynamicCanvasRef.current.width,
+            dynamicCanvasRef.current.height
+          );
+          drawElement(tempElement as Element, dynamicContext);
+        }
 
-        redrawCanvas(dynamicContext, [tempElement as Element]);
+        // redrawCanvas(dynamicContext, [tempElement as Element]);
       }
     },
-    [drawing, dynamicContext, tempElement, redrawCanvas]
+    [drawing, dynamicContext, tempElement, drawElement]
   );
 
   const handleMouseUp = useCallback(() => {
     if (!drawing || !tempElement.type || !tempElement.points) return;
     setDrawing(false);
     const newElement = tempElement as Element;
+
+    drawElement(newElement, staticContext as CanvasRenderingContext2D);
+    captureSnapshot();
+    // repaintFromSnapshot();
+
     setElements((prev) => [...prev, newElement]);
     setHistory((prevHistory) => [...prevHistory, newElement]);
     setRedoStack([]);
 
-    setTempElement({});
     if (dynamicContext && dynamicCanvasRef.current) {
       dynamicContext.clearRect(
         0,
@@ -204,24 +249,41 @@ function SketchBoard() {
         dynamicCanvasRef.current.height
       );
     }
-  }, [drawing, tempElement, dynamicContext]);
+
+    setTempElement({});
+  }, [
+    drawing,
+    tempElement,
+    dynamicContext,
+    captureSnapshot,
+    drawElement,
+    staticContext,
+  ]);
 
   const undo = () => {
-    // console.log(history);
     if (history.length === 0) return;
+
     const lastElement = history[history.length - 1];
+    setElements((prev) => {
+      const newElements = prev.filter((el) => el.id !== lastElement.id);
+      redrawStaticCanvas(newElements);
+      return newElements;
+    });
     setHistory((prev) => prev.slice(0, -1));
     setRedoStack((prev) => [...prev, lastElement]);
-    setElements((prev) => prev.filter((el) => el.id !== lastElement.id));
   };
 
   const redo = () => {
-    // console.log(redoStack);
     if (redoStack.length === 0) return;
     const redoElement = redoStack[redoStack.length - 1];
+
+    setElements((prev) => {
+      const newElements = [...prev, redoElement];
+      redrawStaticCanvas(newElements);
+      return newElements;
+    });
     setRedoStack((prev) => prev.slice(0, -1));
     setHistory((prev) => [...prev, redoElement]);
-    setElements((prev) => [...prev, redoElement]);
   };
 
   useEffect(() => {
@@ -232,7 +294,6 @@ function SketchBoard() {
     };
     const handleTouchMoveEvent = (e: TouchEvent) => {
       if (e.target instanceof HTMLCanvasElement) {
-        console.log("moved");
         handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
       }
     };
@@ -250,8 +311,6 @@ function SketchBoard() {
     };
     const handleMouseMoveEvent = (e: MouseEvent) => {
       if (e.target instanceof HTMLCanvasElement) {
-        console.log("moved");
-
         handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
       }
     };
