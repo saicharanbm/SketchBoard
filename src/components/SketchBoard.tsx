@@ -138,11 +138,11 @@ function SketchBoard() {
       if (rect) {
         const x =
           e instanceof TouchEvent
-            ? e.changedTouches[0].clientX
+            ? e.changedTouches[0].clientX - rect.left
             : e.clientX - rect.left;
         const y =
           e instanceof TouchEvent
-            ? e.changedTouches[0].clientY
+            ? e.changedTouches[0].clientY - rect.top
             : e.clientY - rect.top;
         const newElement: Element = {
           id: Date.now(),
@@ -168,11 +168,11 @@ function SketchBoard() {
       if (rect) {
         const x =
           e instanceof TouchEvent
-            ? e.changedTouches[0].clientX
+            ? e.changedTouches[0].clientX - rect.left
             : e.clientX - rect.left;
         const y =
           e instanceof TouchEvent
-            ? e.changedTouches[0].clientY
+            ? e.changedTouches[0].clientY - rect.top
             : e.clientY - rect.top;
 
         setTempElement((prev) => ({
@@ -262,15 +262,15 @@ function SketchBoard() {
     };
 
     const handleTouchStartEvent = (e: TouchEvent) => {
-      e.preventDefault();
+      // e.preventDefault();
       handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
     };
     const handleTouchMoveEvent = (e: TouchEvent) => {
       e.preventDefault();
       handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
     };
-    const handleTouchEndEvent = (e: TouchEvent) => {
-      e.preventDefault();
+    const handleTouchEndEvent = () => {
+      // e.preventDefault();
       handleMouseUp();
     };
 
@@ -318,11 +318,21 @@ function SketchBoard() {
       />
       <canvas
         ref={staticCanvasRef}
-        style={{ position: "absolute", width: "100%", height: "100%" }}
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          cursor: "crosshair",
+        }}
       />
       <canvas
         ref={dynamicCanvasRef}
-        style={{ position: "absolute", width: "100%", height: "100%" }}
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+          cursor: "crosshair",
+        }}
       />
     </div>
   );
