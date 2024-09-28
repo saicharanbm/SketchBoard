@@ -25,8 +25,6 @@ function SketchBoard() {
   const [history, setHistory] = useState<Element[]>([]);
   const [redoStack, setRedoStack] = useState<Element[]>([]);
 
-  const [snapshot, setSnapshot] = useState<string | null>(null);
-
   useEffect(() => {
     const staticCanvas = staticCanvasRef.current;
     const dynamicCanvas = dynamicCanvasRef.current;
@@ -36,7 +34,6 @@ function SketchBoard() {
         staticCanvas.height = window.innerHeight;
         dynamicCanvas.width = window.innerWidth;
         dynamicCanvas.height = window.innerHeight;
-        setElements((prev) => [...prev]);
       }
     };
     updateCanvasSize();
@@ -50,98 +47,71 @@ function SketchBoard() {
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, []);
 
-  const captureSnapshot = useCallback(() => {
-    if (staticCanvasRef.current) {
-      const dataURL = staticCanvasRef.current.toDataURL();
+  const drawElement = useCallback(function (
+    element: Element,
+    context: CanvasRenderingContext2D
+  ) {
+    if (!element.points || element.points.length === 0) return;
+    // context.save();
+    context.beginPath();
+    context.lineWidth = 2;
+    context.strokeStyle = "#000";
 
-      setSnapshot(dataURL); // Save snapshot
-    }
-  }, []);
-  useEffect(() => {
-    if (snapshot && staticContext) {
-      const img = new Image();
-      img.src = snapshot;
-      img.onload = () => {
-        if (staticCanvasRef.current) {
-          staticContext.clearRect(
-            0,
-            0,
-            staticCanvasRef.current.width,
-            staticCanvasRef.current.height
-          );
-          staticContext.drawImage(img, 0, 0); // Repaint snapshot
-        }
-      };
-    }
-  }, [snapshot, staticContext]);
-  // const repaintFromSnapshot = useCallback(() => {
-  //   console.log(snapshot);
-  // }, [snapshot, staticContext]);
+    switch (element.type) {
+      case "pencil":
+        drawFreeStyle(element, context);
 
-  const drawElement = useCallback(
-    (element: Element, context: CanvasRenderingContext2D) => {
-      if (!element.points || element.points.length === 0) return;
-      // context.save();
-      context.beginPath();
-      context.lineWidth = 2;
-      context.strokeStyle = "#000";
-
-      switch (element.type) {
-        case "pencil":
-          drawFreeStyle(element, context);
-
-          break;
-        case "rectangle": {
-          if (element.points.length < 2) return;
-          const [start, end] = element.points;
-          drawRectangle(start, end, context);
-          // context.rect(start.x, start.y, end.x - start.x, end.y - start.y);
-          break;
-        }
-        case "line": {
-          if (element.points.length < 2) return;
-          const [lineStart, lineEnd] = element.points;
-          drawLine(lineStart, lineEnd, context);
-          break;
-        }
-        // Add placeholder implementations for other shapes
-        case "ellipse": {
-          if (element.points.length < 2) return;
-
-          const [start, end] = element.points;
-          drawCircle(context, start, end);
-
-          break;
-        }
-        case "rhombus": {
-          if (element.points.length < 2) return;
-          const [rhombusStart, rhombusEnd] = element.points;
-          drawRhombus(context, rhombusStart, rhombusEnd);
-          break;
-        }
-        case "arrow": {
-          if (element.points.length < 2) return;
-          const [arrowStart, arrowEnd] = element.points;
-          drawArrow(context, arrowStart, arrowEnd);
-
-          break;
-        }
+        break;
+      case "rectangle": {
+        if (element.points.length < 2) return;
+        const [start, end] = element.points;
+        drawRectangle(start, end, context);
+        // context.rect(start.x, start.y, end.x - start.x, end.y - start.y);
+        break;
       }
+      case "line": {
+        if (element.points.length < 2) return;
+        const [lineStart, lineEnd] = element.points;
+        drawLine(lineStart, lineEnd, context);
+        break;
+      }
+      // Add placeholder implementations for other shapes
+      case "ellipse": {
+        if (element.points.length < 2) return;
 
-      context.stroke();
-      context.closePath();
-      // context.restore();
-    },
-    []
-  );
-  const deleteCanvas = () => {
+        const [start, end] = element.points;
+        drawCircle(context, start, end);
+
+        break;
+      }
+      case "rhombus": {
+        if (element.points.length < 2) return;
+        const [rhombusStart, rhombusEnd] = element.points;
+        drawRhombus(context, rhombusStart, rhombusEnd);
+        break;
+      }
+      case "arrow": {
+        if (element.points.length < 2) return;
+        const [arrowStart, arrowEnd] = element.points;
+        drawArrow(context, arrowStart, arrowEnd);
+
+        break;
+      }
+    }
+
+    context.stroke();
+    context.closePath();
+    // context.restore();
+  },
+  []);
+  const deleteCanvas = function () {
     setElements([]);
     setHistory([]);
     setRedoStack([]);
   };
 
   const redrawStaticCanvas = useCallback(
-    (elements: Element[]) => {
+    function (elements: Element[]) {
       console.log("redraw");
       if (!staticContext || !staticCanvasRef.current) return;
       staticContext.clearRect(
@@ -154,13 +124,13 @@ function SketchBoard() {
     },
     [drawElement, staticContext]
   );
-
-  // useEffect(() => {
-  //   redrawCanvas(staticContext, elements);
-  // }, [redrawCanvas, staticContext, elements]);
+  useEffect(() => {
+    console.log(elements);
+    redrawStaticCanvas(elements);
+  }, [elements, redrawStaticCanvas]);
 
   const handleMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
+    function (e: React.MouseEvent<HTMLCanvasElement>) {
       setDrawing(true);
 
       const rect = staticCanvasRef.current?.getBoundingClientRect();
@@ -186,7 +156,7 @@ function SketchBoard() {
   );
 
   const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
+    function (e: React.MouseEvent<HTMLCanvasElement>) {
       if (
         !drawing ||
         !dynamicContext ||
@@ -213,110 +183,107 @@ function SketchBoard() {
               : [prev.points![0], { x, y }],
         }));
         if (dynamicContext && dynamicCanvasRef.current) {
-          dynamicContext.clearRect(
-            0,
-            0,
-            dynamicCanvasRef.current.width,
-            dynamicCanvasRef.current.height
-          );
+          if (tool !== "pencil") {
+            dynamicContext.clearRect(
+              0,
+              0,
+              dynamicCanvasRef.current.width,
+              dynamicCanvasRef.current.height
+            );
+          }
           drawElement(tempElement as Element, dynamicContext);
         }
 
         // redrawCanvas(dynamicContext, [tempElement as Element]);
       }
     },
-    [drawing, dynamicContext, tempElement, drawElement]
+    [drawing, dynamicContext, tempElement, drawElement, tool]
   );
 
-  const handleMouseUp = useCallback(() => {
-    if (!drawing || !tempElement.type || !tempElement.points) return;
-    setDrawing(false);
-    const newElement = tempElement as Element;
+  const handleMouseUp = useCallback(
+    function () {
+      if (!drawing || !tempElement.type || !tempElement.points) return;
+      setDrawing(false);
+      const newElement = tempElement as Element;
 
-    drawElement(newElement, staticContext as CanvasRenderingContext2D);
-    captureSnapshot();
-    // repaintFromSnapshot();
+      if (newElement.points.length < 2) return;
 
-    setElements((prev) => [...prev, newElement]);
-    setHistory((prevHistory) => [...prevHistory, newElement]);
-    setRedoStack([]);
+      // drawElement(newElement, staticContext as CanvasRenderingContext2D);
+      // captureSnapshot();
+      // repaintFromSnapshot();
 
-    if (dynamicContext && dynamicCanvasRef.current) {
-      dynamicContext.clearRect(
-        0,
-        0,
-        dynamicCanvasRef.current.width,
-        dynamicCanvasRef.current.height
-      );
-    }
+      setElements((prev) => [...prev, newElement]);
+      setHistory((prevHistory) => [...prevHistory, newElement]);
+      setRedoStack([]);
 
-    setTempElement({});
-  }, [
-    drawing,
-    tempElement,
-    dynamicContext,
-    captureSnapshot,
-    drawElement,
-    staticContext,
-  ]);
+      if (dynamicContext && dynamicCanvasRef.current) {
+        dynamicContext.clearRect(
+          0,
+          0,
+          dynamicCanvasRef.current.width,
+          dynamicCanvasRef.current.height
+        );
+      }
 
-  const undo = () => {
+      setTempElement({});
+    },
+    [drawing, tempElement, dynamicContext]
+  );
+
+  const undo = function () {
     if (history.length === 0) return;
-
     const lastElement = history[history.length - 1];
-    setElements((prev) => {
-      const newElements = prev.filter((el) => el.id !== lastElement.id);
-      redrawStaticCanvas(newElements);
-      return newElements;
-    });
     setHistory((prev) => prev.slice(0, -1));
     setRedoStack((prev) => [...prev, lastElement]);
+    setElements((prev) => prev.filter((el) => el.id !== lastElement.id));
   };
 
-  const redo = () => {
+  const redo = function () {
     if (redoStack.length === 0) return;
     const redoElement = redoStack[redoStack.length - 1];
-
-    setElements((prev) => {
-      const newElements = [...prev, redoElement];
-      redrawStaticCanvas(newElements);
-      return newElements;
-    });
     setRedoStack((prev) => prev.slice(0, -1));
     setHistory((prev) => [...prev, redoElement]);
+    setElements((prev) => [...prev, redoElement]);
   };
 
   useEffect(() => {
-    const handleTouchStartEvent = (e: TouchEvent) => {
-      if (e.target instanceof HTMLCanvasElement) {
-        handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
-      }
-    };
-    const handleTouchMoveEvent = (e: TouchEvent) => {
-      if (e.target instanceof HTMLCanvasElement) {
-        handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
-      }
-    };
-
-    const handleTouchEndEvent = () => {
-      handleMouseUp();
-    };
-    window.addEventListener("touchstart", handleTouchStartEvent);
-    window.addEventListener("touchmove", handleTouchMoveEvent);
-    window.addEventListener("touchend", handleTouchEndEvent);
+    // Use the correct native event types for handling mouse and touch events
     const handleMouseDownEvent = (e: MouseEvent) => {
-      if (e.target instanceof HTMLCanvasElement) {
-        handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
-      }
+      e.preventDefault();
+      handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
     };
     const handleMouseMoveEvent = (e: MouseEvent) => {
-      if (e.target instanceof HTMLCanvasElement) {
-        handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
-      }
+      e.preventDefault();
+      handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
     };
-    const handleMouseUpEvent = () => {
+    const handleMouseUpEvent = (e: MouseEvent) => {
+      e.preventDefault();
       handleMouseUp();
     };
+
+    const handleTouchStartEvent = (e: TouchEvent) => {
+      e.preventDefault();
+      handleMouseDown(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+    };
+    const handleTouchMoveEvent = (e: TouchEvent) => {
+      e.preventDefault();
+      handleMouseMove(e as unknown as React.MouseEvent<HTMLCanvasElement>);
+    };
+    const handleTouchEndEvent = (e: TouchEvent) => {
+      e.preventDefault();
+      handleMouseUp();
+    };
+
+    // Add event listeners for both touch and mouse events
+    window.addEventListener("touchstart", handleTouchStartEvent, {
+      passive: false,
+    });
+    window.addEventListener("touchmove", handleTouchMoveEvent, {
+      passive: false,
+    });
+    window.addEventListener("touchend", handleTouchEndEvent, {
+      passive: false,
+    });
 
     window.addEventListener("mousedown", handleMouseDownEvent);
     window.addEventListener("mousemove", handleMouseMoveEvent);
@@ -326,6 +293,7 @@ function SketchBoard() {
       window.removeEventListener("touchstart", handleTouchStartEvent);
       window.removeEventListener("touchmove", handleTouchMoveEvent);
       window.removeEventListener("touchend", handleTouchEndEvent);
+
       window.removeEventListener("mousedown", handleMouseDownEvent);
       window.removeEventListener("mousemove", handleMouseMoveEvent);
       window.removeEventListener("mouseup", handleMouseUpEvent);
