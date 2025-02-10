@@ -5,12 +5,14 @@ const drawFreeStyle = function (
   element: Element,
   context: CanvasRenderingContext2D
 ) {
+  context.beginPath();
   context.moveTo(element.points[0].x, element.points[0].y);
   context.strokeStyle = element.strokeColor;
   context.lineWidth = element.thickness;
   element.points.forEach((point) => {
     context.lineTo(point.x, point.y);
   });
+  context.stroke();
 };
 
 const drawLine = function (
@@ -20,11 +22,14 @@ const drawLine = function (
   strokeColor: string = "black",
   thickness: number = 2
 ) {
+  context.beginPath();
   context.moveTo(lineStart.x, lineStart.y);
   context.strokeStyle = strokeColor;
   context.lineWidth = thickness;
   context.lineTo(lineEnd.x, lineEnd.y);
+  context.stroke();
 };
+
 const drawArrow = function (
   context: CanvasRenderingContext2D,
   arrowStart: Point,
@@ -32,15 +37,14 @@ const drawArrow = function (
   strokeColor: string = "black",
   thickness: number = 3
 ) {
-  const headlen = 12 * thickness; // Slightly longer for a sharper look
-  const headAdjust = headlen * 0.2; // Adjust line end position
+  const headlen = 12 * thickness;
+  const headAdjust = headlen * 0.2;
 
   const dx = arrowEnd.x - arrowStart.x;
   const dy = arrowEnd.y - arrowStart.y;
   const angle = Math.atan2(dy, dx);
-  const sharpAngle = Math.PI / 9; // Reduced angle from 30° to 20°
+  const sharpAngle = Math.PI / 9;
 
-  // Adjust endpoint to prevent gap
   const arrowTipX = arrowEnd.x - headAdjust * Math.cos(angle);
   const arrowTipY = arrowEnd.y - headAdjust * Math.sin(angle);
 
@@ -48,11 +52,9 @@ const drawArrow = function (
   context.strokeStyle = strokeColor;
   context.lineWidth = thickness;
 
-  // Draw main line up to the adjusted tip
   context.moveTo(arrowStart.x, arrowStart.y);
   context.lineTo(arrowTipX, arrowTipY);
 
-  // Draw sharper arrowhead (reduced angle)
   context.moveTo(arrowEnd.x, arrowEnd.y);
   context.lineTo(
     arrowEnd.x - headlen * Math.cos(angle - sharpAngle),
@@ -65,7 +67,26 @@ const drawArrow = function (
   );
 
   context.stroke();
-  context.closePath();
+};
+
+const getPatternType = (
+  pattern: Pattern,
+  ctx: CanvasRenderingContext2D,
+  fillColor: string
+) => {
+  switch (pattern) {
+    case "pattern1":
+      return Pattern1(ctx, fillColor);
+      break;
+    case "pattern2":
+      return Pattern2(ctx, fillColor);
+      break;
+    case "pattern3":
+      return Pattern3(ctx, fillColor);
+      break;
+    default:
+      return null;
+  }
 };
 
 const drawRectangle = function (
@@ -73,7 +94,7 @@ const drawRectangle = function (
   end: Point,
   ctx: CanvasRenderingContext2D,
   pattern: Pattern = "pattern1",
-  strokeColor: string = "black",
+  strokeColor: string = "blue",
   fillColor: string = "red",
   thickness: number = 2
 ) {
@@ -83,21 +104,7 @@ const drawRectangle = function (
   ctx.save();
 
   // Ensure consistent pattern generation
-  let patternType: CanvasPattern | null = null;
-  switch (pattern) {
-    case "pattern1":
-      patternType = Pattern1(ctx, fillColor);
-      break;
-    case "pattern2":
-      patternType = Pattern2(ctx, fillColor);
-      break;
-    case "pattern3":
-      patternType = Pattern3(ctx, fillColor);
-      break;
-    default:
-      patternType = null;
-  }
-
+  const patternType = getPatternType(pattern, ctx, fillColor);
   // Normalize for negative width/height
   const rectX = Math.min(start.x, end.x);
   const rectY = Math.min(start.y, end.y);
@@ -128,71 +135,77 @@ const drawRectangle = function (
 const drawRhombus = function (
   context: CanvasRenderingContext2D,
   rhombusStart: Point,
-  rhombusEnd: Point
+  rhombusEnd: Point,
+  pattern: Pattern = "pattern2",
+  strokeColor: string = "blue",
+  fillColor: string = "red",
+  thickness: number = 2
 ) {
-  // Calculate the center of the rhombus
+  context.save();
+
   const centerX = (rhombusStart.x + rhombusEnd.x) / 2;
   const centerY = (rhombusStart.y + rhombusEnd.y) / 2;
-  context.save();
-  // Translate the context to the center of the rhombus
   context.translate(centerX, centerY);
 
-  // Calculate relative positions from the center
   const halfWidth = (rhombusEnd.x - rhombusStart.x) / 2;
   const halfHeight = (rhombusEnd.y - rhombusStart.y) / 2;
 
-  context.beginPath(); // Make sure to begin a new path
-  context.moveTo(0, -halfHeight); // Top point
-  context.lineTo(halfWidth, 0); // Right point
-  context.lineTo(0, halfHeight); // Bottom point
-  context.lineTo(-halfWidth, 0); // Left point
+  context.beginPath();
+  context.moveTo(0, -halfHeight);
+  context.lineTo(halfWidth, 0);
+  context.lineTo(0, halfHeight);
+  context.lineTo(-halfWidth, 0);
   context.closePath();
 
-  const pattern = Pattern2(context, "red");
-  if (pattern) context.fillStyle = pattern;
+  // Explicitly set stroke properties BEFORE drawing
+  context.lineWidth = thickness;
+  context.strokeStyle = strokeColor;
+
+  // Fill first
+  const patternType = getPatternType(pattern, context, fillColor);
+  context.fillStyle = patternType || fillColor;
   context.fill();
 
-  // Reset the translation to avoid affecting other drawings
+  // Stroke AFTER fill
+  context.stroke();
+
   context.restore();
 };
 
 const drawCircle = function (
   context: CanvasRenderingContext2D,
   start: Point,
-  end: Point
+  end: Point,
+  pattern: Pattern = "pattern2",
+  strokeColor: string = "red",
+  fillColor: string = "red",
+  thickness: number = 5
 ) {
-  // Save the context to restore it later
   context.save();
 
-  // Calculate the center of the ellipse
   const centerX = (start.x + end.x) / 2;
   const centerY = (start.y + end.y) / 2;
 
-  // Calculate the radii (half the width and height)
   const radiusX = Math.abs(end.x - start.x) / 2;
   const radiusY = Math.abs(end.y - start.y) / 2;
 
-  // Translate the context to shift the drawing
   context.translate(centerX, centerY);
 
-  // Draw the ellipse with the translated coordinate system
   context.beginPath();
-  context.ellipse(
-    0, // Use (0, 0) since we already translated to centerX, centerY
-    0,
-    radiusX,
-    radiusY,
-    0, // Rotation
-    0, // Start angle
-    2 * Math.PI // End angle (full circle)
-  );
+  context.ellipse(0, 0, radiusX, radiusY, 0, 0, 2 * Math.PI);
 
-  // Fill with a pattern if available
-  const pattern = Pattern1(context, "red");
-  if (pattern) context.fillStyle = pattern;
+  // Explicitly set stroke properties BEFORE drawing
+  context.lineWidth = thickness;
+  context.strokeStyle = strokeColor;
+
+  // Fill first
+  const patternType = getPatternType(pattern, context, fillColor);
+  context.fillStyle = patternType || fillColor;
   context.fill();
 
-  // Restore the context to its original state
+  // Stroke AFTER fill
+  context.stroke();
+
   context.restore();
 };
 

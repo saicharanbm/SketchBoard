@@ -58,21 +58,17 @@ function SketchBoard() {
     context: CanvasRenderingContext2D
   ) {
     if (!element.points || element.points.length === 0) return;
-    // context.save();
+    context.save();
     context.beginPath();
-    context.lineWidth = 2;
-    context.strokeStyle = "#000";
 
     switch (element.type) {
       case "pencil":
         drawFreeStyle(element, context);
-
         break;
       case "rectangle": {
         if (element.points.length < 2) return;
         const [start, end] = element.points;
         drawRectangle(start, end, context);
-        // context.rect(start.x, start.y, end.x - start.x, end.y - start.y);
         break;
       }
       case "line": {
@@ -81,13 +77,10 @@ function SketchBoard() {
         drawLine(lineStart, lineEnd, context);
         break;
       }
-      // Add placeholder implementations for other shapes
       case "ellipse": {
         if (element.points.length < 2) return;
-
         const [start, end] = element.points;
         drawCircle(context, start, end);
-
         break;
       }
       case "rhombus": {
@@ -100,14 +93,14 @@ function SketchBoard() {
         if (element.points.length < 2) return;
         const [arrowStart, arrowEnd] = element.points;
         drawArrow(context, arrowStart, arrowEnd);
-
         break;
       }
     }
 
-    context.stroke();
+    // Remove this line
+    // context.stroke();
     context.closePath();
-    // context.restore();
+    context.restore();
   },
   []);
   const deleteCanvas = function () {
