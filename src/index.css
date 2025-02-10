@@ -9,9 +9,17 @@ body.light {
 body.dark {
   background-color: #1e1f21;
 }
-body .bg1 {
+body {
   margin: 0;
   background-color: white; /* Optional */
+  background-image: linear-gradient(0deg, transparent 95%, #ddd 100%),
+    linear-gradient(90deg, transparent 95%, #ddd 100%);
+  background-size: 30px 30px; /* Adjust the grid size here */
+}
+.light {
+  margin: 0;
+  background-color: #f8f9fa;
+
   background-image: linear-gradient(0deg, transparent 95%, #ddd 100%),
     linear-gradient(90deg, transparent 95%, #ddd 100%);
   background-size: 30px 30px; /* Adjust the grid size here */
@@ -29,7 +37,7 @@ body .bg1 {
   margin: 0 3px;
 }
 .button.selected {
-  background-color: #111827df;
+  background-color: #2f3542;
 }
 .topbar {
   position: absolute;

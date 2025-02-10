@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import TopBar from "./topbar/TopBar";
-import { Tool, Element } from "../utils/typesAndInterface";
+import { Element, ToolDetails } from "../utils/typesAndInterface";
 import {
   drawFreeStyle,
   drawRectangle,
@@ -18,9 +18,15 @@ function SketchBoard() {
   const [dynamicContext, setDynamicContext] =
     useState<CanvasRenderingContext2D | null>(null);
   const [drawing, setDrawing] = useState<boolean>(false);
-  const [tool, setTool] = useState<Tool>("pencil");
+  const [toolDetails, setToolDetails] = useState<ToolDetails>({
+    name: "pencil",
+    strokeColor: "#000",
+    fillColor: "",
+    thickness: 2,
+    pattern: "none",
+  });
   const [elements, setElements] = useState<Element[]>([]);
-  const [tempElement, setTempElement] = useState<Partial<Element>>({});
+  const [tempElement, setTempElement] = useState<Partial<Element>>();
 
   const [history, setHistory] = useState<Element[]>([]);
   const [redoStack, setRedoStack] = useState<Element[]>([]);
@@ -146,13 +152,17 @@ function SketchBoard() {
             : e.clientY - rect.top;
         const newElement: Element = {
           id: Date.now(),
-          type: tool,
+          strokeColor: toolDetails.strokeColor,
+          fillColor: toolDetails.fillColor,
+          thickness: toolDetails.thickness,
+          pattern: toolDetails.pattern,
+          type: toolDetails.name,
           points: [{ x, y }],
         };
         setTempElement(newElement);
       }
     },
-    [tool]
+    [toolDetails]
   );
 
   const handleMouseMove = useCallback(
@@ -161,6 +171,7 @@ function SketchBoard() {
         !drawing ||
         !dynamicContext ||
         !dynamicCanvasRef.current ||
+        !tempElement ||
         !tempElement.points
       )
         return;
@@ -175,15 +186,18 @@ function SketchBoard() {
             ? e.changedTouches[0].clientY - rect.top
             : e.clientY - rect.top;
 
-        setTempElement((prev) => ({
-          ...prev,
-          points:
-            prev.type === "pencil"
-              ? [...(prev.points || []), { x, y }]
-              : [prev.points![0], { x, y }],
-        }));
+        setTempElement((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            points:
+              prev.type === "pencil"
+                ? [...(prev.points || []), { x, y }]
+                : [prev.points![0], { x, y }],
+          };
+        });
         if (dynamicContext && dynamicCanvasRef.current) {
-          if (tool !== "pencil") {
+          if (toolDetails.name !== "pencil") {
             dynamicContext.clearRect(
               0,
               0,
@@ -197,12 +211,13 @@ function SketchBoard() {
         // redrawCanvas(dynamicContext, [tempElement as Element]);
       }
     },
-    [drawing, dynamicContext, tempElement, drawElement, tool]
+    [drawing, dynamicContext, tempElement, drawElement, toolDetails]
   );
 
   const handleMouseUp = useCallback(
     function () {
-      if (!drawing || !tempElement.type || !tempElement.points) return;
+      if (!drawing || !tempElement || !tempElement.type || !tempElement.points)
+        return;
       setDrawing(false);
       const newElement = tempElement as Element;
 
@@ -302,6 +317,7 @@ function SketchBoard() {
 
   return (
     <div
+      className="light"
       style={{
         position: "fixed",
         width: "100vw",
@@ -312,8 +328,8 @@ function SketchBoard() {
       <TopBar
         onUndo={undo}
         onRedo={redo}
-        setTool={setTool}
-        selectedTool={tool}
+        setToolDetails={setToolDetails}
+        selectedTool={toolDetails.name}
         deleteAll={deleteCanvas}
       />
       <canvas

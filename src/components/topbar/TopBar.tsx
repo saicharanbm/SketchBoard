@@ -10,21 +10,25 @@ import {
   Trash2,
 } from "lucide-react";
 import Button from "./Button";
-import { Tool } from "../../utils/typesAndInterface";
+import { Dispatch, SetStateAction } from "react";
+import { Tool, ToolDetails } from "../../utils/typesAndInterface";
 
 function TopBar({
   onUndo,
   onRedo,
-  setTool,
+  setToolDetails,
   selectedTool,
   deleteAll,
 }: {
   onUndo: () => void;
   onRedo: () => void;
-  setTool: (tool: Tool) => void;
+  setToolDetails: Dispatch<SetStateAction<ToolDetails>>;
   selectedTool: Tool; // Selected tool type
   deleteAll: () => void;
 }) {
+  function setTool(tool: Tool) {
+    setToolDetails((prev) => ({ ...prev, name: tool }));
+  }
   return (
     <div className="topbar">
       <Button
