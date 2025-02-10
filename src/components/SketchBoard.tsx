@@ -9,6 +9,7 @@ import {
   drawRhombus,
   drawCircle,
 } from "../utils/draw";
+import Sidebar from "./SideBar";
 
 function SketchBoard() {
   const staticCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -325,6 +326,7 @@ function SketchBoard() {
         selectedTool={toolDetails.name}
         deleteAll={deleteCanvas}
       />
+      <Sidebar />
       <canvas
         ref={staticCanvasRef}
         style={{

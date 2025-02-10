@@ -96,7 +96,8 @@ const drawRectangle = function (
   pattern: Pattern = "pattern1",
   strokeColor: string = "blue",
   fillColor: string = "red",
-  thickness: number = 2
+  thickness: number = 2,
+  isDotted: boolean = true
 ) {
   const width = end.x - start.x;
   const height = end.y - start.y;
@@ -124,6 +125,12 @@ const drawRectangle = function (
 
   // Reset translation before applying stroke to avoid misalignment
   ctx.translate(-rectX, -rectY);
+
+  if (isDotted) {
+    ctx.setLineDash([4, 4]); // 5px dash, 5px gap (adjust as needed)
+  } else {
+    ctx.setLineDash([]); // Reset to solid line
+  }
 
   // Ensure sharp stroke by drawing separately
   ctx.strokeStyle = strokeColor;

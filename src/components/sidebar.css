@@ -1,0 +1,151 @@
+/* Sidebar.css */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 48px;
+  background: white;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.sidebar.open {
+  width: 280px;
+}
+
+.toggle-btn {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.sidebar-content {
+  padding: 24px;
+  width: 280px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.section h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.color-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.color-btn.transparent {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==");
+}
+
+.color-btn.selected {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.option-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.option-btn {
+  width: 48px;
+  height: 48px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.option-btn:hover {
+  background: #e5e7eb;
+}
+
+.stroke-line {
+  width: 24px;
+  background: black;
+}
+
+.slider-container {
+  padding: 0 8px;
+}
+
+.opacity-slider {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  appearance: none;
+}
+
+.opacity-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #3b82f6;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  color: #666;
+  font-size: 14px;
+}
+.fill-pattern {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.striped {
+  background: repeating-linear-gradient(
+    45deg,
+    #000,
+    #000 2px,
+    transparent 2px,
+    transparent 8px
+  );
+}
+
+.dotted {
+  background: radial-gradient(#000 20%, transparent 20%) 0 0 / 8px 8px;
+}
+
+.solid {
+  background: #000;
+}
