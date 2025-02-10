@@ -20,9 +20,9 @@ function SketchBoard() {
   const [drawing, setDrawing] = useState<boolean>(false);
   const [toolDetails, setToolDetails] = useState<ToolDetails>({
     name: "pencil",
-    strokeColor: "#000",
+    strokeColor: "#db7093",
     fillColor: "",
-    thickness: 2,
+    thickness: 5,
     pattern: "none",
   });
   const [elements, setElements] = useState<Element[]>([]);

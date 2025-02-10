@@ -1,39 +1,13 @@
-import { Element, Point } from "./typesAndInterface";
-import { Pattern1, Pattern2 } from "./pattern";
-const drawRectangle = function (
-  start: Point,
-  end: Point,
-  ctx: CanvasRenderingContext2D
-) {
-  // Save the current context state
-  ctx.save();
-
-  // Translate the context to localize the pattern to this rectangle
-  ctx.translate(start.x, start.y);
-
-  // Generate a new pattern for each rectangle
-  const pattern = Pattern1(ctx, "red");
-  if (pattern) ctx.fillStyle = pattern;
-
-  // Draw the rectangle relative to the translated context
-  ctx.beginPath();
-  ctx.rect(0, 0, end.x - start.x, end.y - start.y);
-  ctx.fill();
-
-  // Draw the stroke/outline
-  ctx.strokeStyle = "black"; // Customize stroke color
-  ctx.lineWidth = 2; // Customize stroke thickness
-  ctx.stroke();
-
-  // Restore the context to its original state
-  ctx.restore();
-};
+import { Element, Pattern, Point } from "./typesAndInterface";
+import { Pattern1, Pattern2, Pattern3 } from "./pattern";
 
 const drawFreeStyle = function (
   element: Element,
   context: CanvasRenderingContext2D
 ) {
   context.moveTo(element.points[0].x, element.points[0].y);
+  context.strokeStyle = element.strokeColor;
+  context.lineWidth = element.thickness;
   element.points.forEach((point) => {
     context.lineTo(point.x, point.y);
   });
@@ -42,31 +16,114 @@ const drawFreeStyle = function (
 const drawLine = function (
   lineStart: Point,
   lineEnd: Point,
-  context: CanvasRenderingContext2D
+  context: CanvasRenderingContext2D,
+  strokeColor: string = "black",
+  thickness: number = 2
 ) {
   context.moveTo(lineStart.x, lineStart.y);
+  context.strokeStyle = strokeColor;
+  context.lineWidth = thickness;
   context.lineTo(lineEnd.x, lineEnd.y);
 };
 const drawArrow = function (
   context: CanvasRenderingContext2D,
   arrowStart: Point,
-  arrowEnd: Point
+  arrowEnd: Point,
+  strokeColor: string = "black",
+  thickness: number = 3
 ) {
-  const headlen = 10;
+  const headlen = 12 * thickness; // Slightly longer for a sharper look
+  const headAdjust = headlen * 0.2; // Adjust line end position
+
   const dx = arrowEnd.x - arrowStart.x;
   const dy = arrowEnd.y - arrowStart.y;
   const angle = Math.atan2(dy, dx);
+  const sharpAngle = Math.PI / 9; // Reduced angle from 30° to 20°
+
+  // Adjust endpoint to prevent gap
+  const arrowTipX = arrowEnd.x - headAdjust * Math.cos(angle);
+  const arrowTipY = arrowEnd.y - headAdjust * Math.sin(angle);
+
+  context.beginPath();
+  context.strokeStyle = strokeColor;
+  context.lineWidth = thickness;
+
+  // Draw main line up to the adjusted tip
   context.moveTo(arrowStart.x, arrowStart.y);
-  context.lineTo(arrowEnd.x, arrowEnd.y);
+  context.lineTo(arrowTipX, arrowTipY);
+
+  // Draw sharper arrowhead (reduced angle)
+  context.moveTo(arrowEnd.x, arrowEnd.y);
   context.lineTo(
-    arrowEnd.x - headlen * Math.cos(angle - Math.PI / 6),
-    arrowEnd.y - headlen * Math.sin(angle - Math.PI / 6)
+    arrowEnd.x - headlen * Math.cos(angle - sharpAngle),
+    arrowEnd.y - headlen * Math.sin(angle - sharpAngle)
   );
   context.moveTo(arrowEnd.x, arrowEnd.y);
   context.lineTo(
-    arrowEnd.x - headlen * Math.cos(angle + Math.PI / 6),
-    arrowEnd.y - headlen * Math.sin(angle + Math.PI / 6)
+    arrowEnd.x - headlen * Math.cos(angle + sharpAngle),
+    arrowEnd.y - headlen * Math.sin(angle + sharpAngle)
   );
+
+  context.stroke();
+  context.closePath();
+};
+
+const drawRectangle = function (
+  start: Point,
+  end: Point,
+  ctx: CanvasRenderingContext2D,
+  pattern: Pattern = "pattern1",
+  strokeColor: string = "black",
+  fillColor: string = "red",
+  thickness: number = 2
+) {
+  const width = end.x - start.x;
+  const height = end.y - start.y;
+
+  ctx.save();
+
+  // Ensure consistent pattern generation
+  let patternType: CanvasPattern | null = null;
+  switch (pattern) {
+    case "pattern1":
+      patternType = Pattern1(ctx, fillColor);
+      break;
+    case "pattern2":
+      patternType = Pattern2(ctx, fillColor);
+      break;
+    case "pattern3":
+      patternType = Pattern3(ctx, fillColor);
+      break;
+    default:
+      patternType = null;
+  }
+
+  // Normalize for negative width/height
+  const rectX = Math.min(start.x, end.x);
+  const rectY = Math.min(start.y, end.y);
+  const rectWidth = Math.abs(width);
+  const rectHeight = Math.abs(height);
+
+  // Translate for correct pattern alignment
+  ctx.translate(rectX, rectY);
+
+  if (patternType) {
+    ctx.fillStyle = patternType;
+  } else {
+    ctx.fillStyle = fillColor;
+  }
+
+  ctx.fillRect(0, 0, rectWidth, rectHeight);
+
+  // Reset translation before applying stroke to avoid misalignment
+  ctx.translate(-rectX, -rectY);
+
+  // Ensure sharp stroke by drawing separately
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = thickness;
+  ctx.strokeRect(rectX, rectY, rectWidth, rectHeight);
+
+  ctx.restore();
 };
 const drawRhombus = function (
   context: CanvasRenderingContext2D,
