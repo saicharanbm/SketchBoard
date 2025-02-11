@@ -21,6 +21,7 @@ export type ToolDetails = {
   fillColor: string;
   thickness: number;
   pattern: Pattern;
+  isDotted: boolean;
 };
 
 interface Element {
@@ -29,6 +30,7 @@ interface Element {
   strokeColor: string;
   fillColor: string;
   thickness: number;
+  isDotted: boolean;
   pattern: Pattern;
   points: Point[];
 }

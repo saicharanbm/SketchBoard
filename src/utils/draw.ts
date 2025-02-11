@@ -3,10 +3,13 @@ import { Pattern1, Pattern2, Pattern3 } from "./pattern";
 
 const drawFreeStyle = function (
   element: Element,
-  context: CanvasRenderingContext2D
+  context: CanvasRenderingContext2D,
+  isDotted: boolean = true
 ) {
   context.beginPath();
   context.moveTo(element.points[0].x, element.points[0].y);
+  setLineDash(context, isDotted);
+
   context.strokeStyle = element.strokeColor;
   context.lineWidth = element.thickness;
   element.points.forEach((point) => {
@@ -20,10 +23,13 @@ const drawLine = function (
   lineEnd: Point,
   context: CanvasRenderingContext2D,
   strokeColor: string = "black",
-  thickness: number = 2
+  thickness: number = 2,
+  isDotted: boolean = true
 ) {
   context.beginPath();
   context.moveTo(lineStart.x, lineStart.y);
+  setLineDash(context, isDotted);
+
   context.strokeStyle = strokeColor;
   context.lineWidth = thickness;
   context.lineTo(lineEnd.x, lineEnd.y);
@@ -35,7 +41,8 @@ const drawArrow = function (
   arrowStart: Point,
   arrowEnd: Point,
   strokeColor: string = "black",
-  thickness: number = 3
+  thickness: number = 3,
+  isDotted: boolean = true
 ) {
   const headlen = 12 * thickness;
   const headAdjust = headlen * 0.2;
@@ -49,6 +56,8 @@ const drawArrow = function (
   const arrowTipY = arrowEnd.y - headAdjust * Math.sin(angle);
 
   context.beginPath();
+  setLineDash(context, isDotted);
+
   context.strokeStyle = strokeColor;
   context.lineWidth = thickness;
 
@@ -89,6 +98,14 @@ const getPatternType = (
   }
 };
 
+function setLineDash(context: CanvasRenderingContext2D, isDotted: boolean) {
+  if (isDotted) {
+    context.setLineDash([4, 4]); // 5px dash, 5px gap (adjust as needed)
+  } else {
+    context.setLineDash([]); // Reset to solid line
+  }
+}
+
 const drawRectangle = function (
   start: Point,
   end: Point,
@@ -126,11 +143,7 @@ const drawRectangle = function (
   // Reset translation before applying stroke to avoid misalignment
   ctx.translate(-rectX, -rectY);
 
-  if (isDotted) {
-    ctx.setLineDash([4, 4]); // 5px dash, 5px gap (adjust as needed)
-  } else {
-    ctx.setLineDash([]); // Reset to solid line
-  }
+  setLineDash(ctx, isDotted);
 
   // Ensure sharp stroke by drawing separately
   ctx.strokeStyle = strokeColor;
@@ -139,6 +152,7 @@ const drawRectangle = function (
 
   ctx.restore();
 };
+
 const drawRhombus = function (
   context: CanvasRenderingContext2D,
   rhombusStart: Point,
@@ -146,7 +160,8 @@ const drawRhombus = function (
   pattern: Pattern = "pattern2",
   strokeColor: string = "blue",
   fillColor: string = "red",
-  thickness: number = 2
+  thickness: number = 2,
+  isDotted: boolean = true
 ) {
   context.save();
 
@@ -163,6 +178,8 @@ const drawRhombus = function (
   context.lineTo(0, halfHeight);
   context.lineTo(-halfWidth, 0);
   context.closePath();
+
+  setLineDash(context, isDotted);
 
   // Explicitly set stroke properties BEFORE drawing
   context.lineWidth = thickness;
@@ -186,7 +203,8 @@ const drawCircle = function (
   pattern: Pattern = "pattern2",
   strokeColor: string = "red",
   fillColor: string = "red",
-  thickness: number = 5
+  thickness: number = 5,
+  isDotted: boolean = true
 ) {
   context.save();
 
@@ -201,6 +219,7 @@ const drawCircle = function (
   context.beginPath();
   context.ellipse(0, 0, radiusX, radiusY, 0, 0, 2 * Math.PI);
 
+  setLineDash(context, isDotted);
   // Explicitly set stroke properties BEFORE drawing
   context.lineWidth = thickness;
   context.strokeStyle = strokeColor;

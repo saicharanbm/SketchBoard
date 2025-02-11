@@ -23,7 +23,9 @@
   position: absolute;
   left: 10px;
   top: 10px;
-  background: transparent;
+  padding: 3px;
+  border-radius: 10%;
+  background: #fcf9f7;
   border: none;
   cursor: pointer;
   z-index: 1001;
@@ -106,13 +108,11 @@
   justify-content: center;
   cursor: pointer;
 }
-
-.option-btn.selected {
-  background: #e0dffe;
-}
-
 .option-btn:hover {
   background: #e5e7eb;
+}
+.option-btn.selected {
+  background: #e0dffe;
 }
 
 .stroke-line {
@@ -155,7 +155,7 @@
   border-radius: 4px;
 }
 
-.striped {
+.pattern {
   background: repeating-linear-gradient(
     45deg,
     #000,
@@ -165,10 +165,25 @@
   );
 }
 
-.dotted {
+.pattern2 {
   background: radial-gradient(#000 20%, transparent 20%) 0 0 / 8px 8px;
+}
+.pattern3 {
+  background: radial-gradient(#000 50%, transparent 50%) 0 0 / 8px 8px;
 }
 
 .solid {
   background: #000;
+}
+.solid-line,
+.dotted-line {
+  display: inline-block;
+  width: 20px; /* Adjust width as needed */
+  height: 2px;
+  background-color: currentColor;
+}
+
+.dotted-line {
+  border-bottom: 2px dotted currentColor;
+  background-color: transparent;
 }

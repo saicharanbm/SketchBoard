@@ -12,6 +12,9 @@ export default function Sidebar({
 }) {
   const [isOpen, setIsOpen] = useState(true);
   const [showContent, setShowContent] = useState(true);
+  const updateToolDetails = (key: string, value: string | number | boolean) => {
+    setToolDetails((prev) => ({ ...prev, [key]: value }));
+  };
 
   const toggleSidebar = () => {
     if (!isOpen) {
@@ -47,6 +50,7 @@ export default function Sidebar({
                   toolDetails.strokeColor === color && "selected"
                 }`}
                 style={{ backgroundColor: color }}
+                onClick={() => updateToolDetails("strokeColor", color)}
               />
             ))}
           </div>
@@ -63,6 +67,7 @@ export default function Sidebar({
                   className={`color-btn ${
                     color === "transparent" ? "transparent" : ""
                   } ${toolDetails.fillColor === color && "selected"}`}
+                  onClick={() => updateToolDetails("fillColor", color)}
                   style={{
                     backgroundColor: `${color === "transparent" ? "" : color}`,
                   }}
@@ -76,9 +81,19 @@ export default function Sidebar({
         <div className={`section ${!showContent && "showContent"}`}>
           <h3>Fill</h3>
           <div className="option-buttons">
-            {["pattern1", "pattern2", "pattern3", "solid"].map((pattern, i) => (
-              <button key={i} className={`option-btn ${i === 0 && "selected"}`}>
-                <div className={`fill-pattern ${pattern}`}></div>
+            {["pattern", "pattern2", "pattern3", "solid"].map((pattern, i) => (
+              <button
+                key={i}
+                className={`option-btn ${
+                  toolDetails.pattern === pattern && "selected"
+                }`}
+                onClick={() => updateToolDetails("pattern", pattern)}
+              >
+                <div
+                  className={`fill-pattern ${
+                    pattern === "pattern1" ? "pattern" : pattern
+                  }`}
+                ></div>
               </button>
             ))}
           </div>
@@ -88,10 +103,13 @@ export default function Sidebar({
         <div className={`section ${!showContent && "showContent"}`}>
           <h3>Stroke width</h3>
           <div className="option-buttons">
-            {[1, 2, 3, 5].map((width, i) => (
+            {[2, 3, 5, 8].map((width) => (
               <button
                 key={width}
-                className={`option-btn ${i === 0 && "selected"}`}
+                className={`option-btn ${
+                  toolDetails.thickness === width && "selected"
+                }`}
+                onClick={() => updateToolDetails("thickness", width)}
               >
                 <div
                   className="stroke-line"
@@ -106,9 +124,15 @@ export default function Sidebar({
         <div className={`section ${!showContent && "showContent"}`}>
           <h3>Stroke style</h3>
           <div className="option-buttons">
-            {["—", "····"].map((style, i) => (
-              <button key={i} className={`option-btn ${i === 0 && "selected"}`}>
-                <span>{style}</span>
+            {[false, true].map((style, i) => (
+              <button
+                key={i}
+                className={`option-btn ${
+                  toolDetails.isDotted === style && "selected"
+                }`}
+                onClick={() => updateToolDetails("isDotted", style)}
+              >
+                <span className={!style ? "solid-line" : "dotted-line"}></span>
               </button>
             ))}
           </div>

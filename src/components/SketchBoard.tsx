@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import TopBar from "./topbar/TopBar";
-import { Element, ToolDetails } from "../utils/typesAndInterface";
+import { Element, Pattern, ToolDetails } from "../utils/typesAndInterface";
 import {
   drawFreeStyle,
   drawRectangle,
@@ -23,8 +23,9 @@ function SketchBoard() {
     name: "pencil",
     strokeColor: "black",
     fillColor: "pink",
-    thickness: 5,
+    thickness: 8,
     pattern: "solid",
+    isDotted: false,
   });
   const [elements, setElements] = useState<Element[]>([]);
   const [tempElement, setTempElement] = useState<Partial<Element>>();
@@ -56,7 +57,12 @@ function SketchBoard() {
 
   const drawElement = useCallback(function (
     element: Element,
-    context: CanvasRenderingContext2D
+    context: CanvasRenderingContext2D,
+    pattern: Pattern,
+    strokeColor: string,
+    fillColor: string,
+    thickness: number,
+    isDotted: boolean
   ) {
     if (!element.points || element.points.length === 0) return;
     context.save();
@@ -64,42 +70,74 @@ function SketchBoard() {
 
     switch (element.type) {
       case "pencil":
-        drawFreeStyle(element, context);
+        drawFreeStyle(element, context, isDotted);
         break;
       case "rectangle": {
         if (element.points.length < 2) return;
         const [start, end] = element.points;
-        drawRectangle(start, end, context);
+        drawRectangle(
+          start,
+          end,
+          context,
+          pattern,
+          strokeColor,
+          fillColor,
+          thickness,
+          isDotted
+        );
         break;
       }
       case "line": {
         if (element.points.length < 2) return;
         const [lineStart, lineEnd] = element.points;
-        drawLine(lineStart, lineEnd, context);
+        drawLine(lineStart, lineEnd, context, strokeColor, thickness, isDotted);
         break;
       }
       case "ellipse": {
         if (element.points.length < 2) return;
         const [start, end] = element.points;
-        drawCircle(context, start, end);
+        drawCircle(
+          context,
+          start,
+          end,
+          pattern,
+          strokeColor,
+          fillColor,
+          thickness,
+          isDotted
+        );
         break;
       }
       case "rhombus": {
         if (element.points.length < 2) return;
         const [rhombusStart, rhombusEnd] = element.points;
-        drawRhombus(context, rhombusStart, rhombusEnd);
+        drawRhombus(
+          context,
+          rhombusStart,
+          rhombusEnd,
+          pattern,
+          strokeColor,
+          fillColor,
+          thickness,
+          isDotted
+        );
         break;
       }
       case "arrow": {
         if (element.points.length < 2) return;
         const [arrowStart, arrowEnd] = element.points;
-        drawArrow(context, arrowStart, arrowEnd);
+        drawArrow(
+          context,
+          arrowStart,
+          arrowEnd,
+          strokeColor,
+          thickness,
+          isDotted
+        );
         break;
       }
     }
 
-    // Remove this line
-    // context.stroke();
     context.closePath();
     context.restore();
   },
@@ -120,7 +158,17 @@ function SketchBoard() {
         staticCanvasRef.current.width,
         staticCanvasRef.current.height
       );
-      elements.forEach((element) => drawElement(element, staticContext));
+      elements.forEach((element) =>
+        drawElement(
+          element,
+          staticContext,
+          element.pattern,
+          element.strokeColor,
+          element.fillColor,
+          element.thickness,
+          element.isDotted
+        )
+      );
     },
     [drawElement, staticContext]
   );
@@ -149,6 +197,7 @@ function SketchBoard() {
           strokeColor: toolDetails.strokeColor,
           fillColor: toolDetails.fillColor,
           thickness: toolDetails.thickness,
+          isDotted: toolDetails.isDotted,
           pattern: toolDetails.pattern,
           type: toolDetails.name,
           points: [{ x, y }],
@@ -199,7 +248,15 @@ function SketchBoard() {
               dynamicCanvasRef.current.height
             );
           }
-          drawElement(tempElement as Element, dynamicContext);
+          drawElement(
+            tempElement as Element,
+            dynamicContext,
+            toolDetails.pattern,
+            toolDetails.strokeColor,
+            toolDetails.fillColor,
+            toolDetails.thickness,
+            toolDetails.isDotted
+          );
         }
 
         // redrawCanvas(dynamicContext, [tempElement as Element]);
