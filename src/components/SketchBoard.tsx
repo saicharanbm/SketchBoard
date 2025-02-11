@@ -21,10 +21,10 @@ function SketchBoard() {
   const [drawing, setDrawing] = useState<boolean>(false);
   const [toolDetails, setToolDetails] = useState<ToolDetails>({
     name: "pencil",
-    strokeColor: "#db7093",
-    fillColor: "",
+    strokeColor: "black",
+    fillColor: "pink",
     thickness: 5,
-    pattern: "none",
+    pattern: "solid",
   });
   const [elements, setElements] = useState<Element[]>([]);
   const [tempElement, setTempElement] = useState<Partial<Element>>();
@@ -326,7 +326,7 @@ function SketchBoard() {
         selectedTool={toolDetails.name}
         deleteAll={deleteCanvas}
       />
-      <Sidebar />
+      <Sidebar toolDetails={toolDetails} setToolDetails={setToolDetails} />
       <canvas
         ref={staticCanvasRef}
         style={{

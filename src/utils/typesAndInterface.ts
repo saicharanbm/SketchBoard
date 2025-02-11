@@ -13,7 +13,7 @@ interface Point {
   y: number;
 }
 
-export type Pattern = "pattern1" | "pattern2" | "pattern3" | "none" | "fill";
+export type Pattern = "pattern1" | "pattern2" | "pattern3" | "solid";
 
 export type ToolDetails = {
   name: Tool;
