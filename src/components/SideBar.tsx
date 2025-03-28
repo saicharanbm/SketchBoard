@@ -81,7 +81,7 @@ export default function Sidebar({
         <div className={`section ${!showContent && "showContent"}`}>
           <h3>Fill</h3>
           <div className="option-buttons">
-            {["pattern", "pattern2", "pattern3", "solid"].map((pattern, i) => (
+            {["pattern1", "pattern2", "pattern3", "solid"].map((pattern, i) => (
               <button
                 key={i}
                 className={`option-btn ${
